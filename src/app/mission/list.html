@@ -1,0 +1,18 @@
+<h2>Mercury Missions</h2> Select a mission to view details on the mission.
+
+<p>
+  <table class="table table-striped table-hover">
+    <tr>
+      <th>Mission</th>
+      <th>Rocket</th>
+      <th>Launch Date</th>
+      <th>Pilot</th>
+    </tr>
+    <tr ng-repeat="item in vm.items" ng-click="vm.onSelectItem(item)">
+      <td>{{::item.Title}}</td>
+      <td>{{::item.Rocket}}</td>
+      <td>{{::item.LaunchDate | date:'MMMM dd, yyyy'}}</td>
+      <td>{{::item.Pilot}}</td>
+    </tr>
+  </table>
+</p>
