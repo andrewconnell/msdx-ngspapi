@@ -3,15 +3,19 @@
 
   angular.module('ngSpRestApi')
     .service('ngSpRestApi.spRestService', [
+      '$http',
       '$q',
       spRestService
     ]);
 
+  var listUrl = "https://aconn.sharepoint.com/sites/devshowcase/_api/web/lists/getByTitle('Apollo Missions')/items";
+
   /**
    * @constructor
+   * @param  {Object} $http - Angular's $http service
    * @param  {Object} $q    - Angular's promise service
    */
-  function spRestService($q) {
+  function spRestService($http, $q) {
     return {
       getItem: getItem,
       getItems: getItems,
@@ -30,13 +34,20 @@
     function getItem(itemId) {
       var deferred = $q.defer();
 
-      deferred.resolve({
-        Id: 3,
-        Title: 'Mercury 3',
-        Rocket: 'Redstone',
-        Pilot: 'Shepard',
-        LaunchDate: '1961-05-05T00:00:00'
-      });
+      var query = listUrl +
+        '(' + itemId + ')' +
+        '?$select=Id,Title,Rocket,Commander,SrPilotCmPilot,PilotLmPilot,LaunchDate';
+      var getOptions = {
+        url: query,
+        headers: {
+          'Accept': 'application/json;odata=verbose'
+        }
+      };
+      
+      $http(getOptions)
+        .success(function (response) {
+          deferred.resolve(response.d);
+        });
 
       return deferred.promise;
     }
@@ -50,64 +61,20 @@
     function getItems() {
       var deferred = $q.defer();
 
-      deferred.resolve([
-        {
-          Id: 1,
-          Title: 'Mercury 1',
-          Rocket: 'Redstone',
-          Pilot: '',
-          LaunchDate: '1960-07-29T00:00:00'
-        },
-        {
-          Id: 2,
-          Title: 'Mercury 2',
-          Rocket: 'Redstone',
-          Pilot: '',
-          LaunchDate: '1961-01-31T00:00:00'
-        },
-        {
-          Id: 3,
-          Title: 'Mercury 3',
-          Rocket: 'Redstone',
-          Pilot: 'Shepard',
-          LaunchDate: '1961-05-05T00:00:00'
-        },
-        {
-          Id: 4,
-          Title: 'Mercury 4',
-          Rocket: 'Redstone',
-          Pilot: 'Grissom',
-          LaunchDate: '1961-07-21T00:00:00'
-        },
-        {
-          Id: 6,
-          Title: 'Mercury 6',
-          Rocket: 'Atlas',
-          Pilot: 'Glenn',
-          LaunchDate: '1962-02-20T00:00:00'
-        },
-        {
-          Id: 7,
-          Title: 'Mercury 7',
-          Rocket: 'Atlas',
-          Pilot: 'Carpenter',
-          LaunchDate: '1962-05-24T00:00:00'
-        },
-        {
-          Id: 8,
-          Title: 'Mercury 8',
-          Rocket: 'Atlas',
-          Pilot: 'Schirra',
-          LaunchDate: '1962-10-03T00:00:00'
-        },
-        {
-          Id: 9,
-          Title: 'Mercury 9',
-          Rocket: 'Atlas',
-          Pilot: 'Cooper',
-          LaunchDate: '1963-05-15T00:00:00'
+      var query = listUrl +
+        '?$select=Id,Title,Rocket,Commander,SrPilotCmPilot,PilotLmPilot,LaunchDate' +
+        '&$orderby=LaunchDate';
+      var getOptions = {
+        url: query,
+        headers: {
+          'Accept': 'application/json;odata=verbose'
         }
-      ]);
+      };
+      
+      $http(getOptions)
+        .success(function (response) {
+          deferred.resolve(response.d.results);
+        });
 
       return deferred.promise;
     }
@@ -122,7 +89,30 @@
     function saveItem(item) {
       var deferred = $q.defer();
 
-      deferred.resolve();
+      var query = listUrl + '(' + item.Id + ')';
+      var saveOptions = {
+        url: query,
+        method: 'patch',
+        headers: {
+          'Accept': 'application/json;odata=verbose',
+          'Content-Type': 'application/json;odata=verbose',
+          'If-Match': item.__metadata.etag
+        },
+        data: JSON.stringify(item)
+      }
+
+      // remove id, launch date & other medata
+      delete item.Id;
+      delete item.ID;
+      delete item.__metadata.id;
+      delete item.__metadata.uri;
+
+      // issue HTTP request
+      $http(saveOptions)
+        .success(function(response){
+          console.log(response);
+          deferred.resolve(response);
+        });
 
       return deferred.promise;
     }

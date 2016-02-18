@@ -2,19 +2,26 @@
   'use strict';
 
   angular.module('ngSpRestApi', [
-    'ngRoute'
+    'ngRoute',
+    'AdalAngular'
   ])
-    .config(['$routeProvider',
+    .config([
+      '$routeProvider',
+      '$httpProvider',
+      'adalAuthenticationServiceProvider',
       appConfig
     ]);
 
   /**
-   * Configure the application's settings.
+   * Configure the application's routing & authentication settings.
    * 
    * @param  {Object} $routeProvider - Angular's route provider
+   * @param  {Object} $httpProvider  - Angular's $http provider
+   * @param  {Object} adalProvider   - ADAL JS' provider
    */
-  function appConfig($routeProvider) {
+  function appConfig($routeProvider, $httpProvider, adalProvider) {
     configRoutes($routeProvider);
+    configAuth($httpProvider, adalProvider);
   }
 
   /* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ */
@@ -39,14 +46,33 @@
         sortOrder: 1,
         templateUrl: 'app/mission/list.html',
         controller: 'ngSpRestApi.missionController',
-        controllerAs: 'vm'
+        controllerAs: 'vm',
+        requireADLogin: true
       })
       .when('/missions/:itemId', {
         templateUrl: 'app/mission/item.html',
         controller: 'ngSpRestApi.missionController',
-        controllerAs: 'vm'
+        controllerAs: 'vm',
+        requireADLogin: true
       })
       .otherwise({ redirectTo: '/' });
+  }
+
+  /**
+   * Configure authencation for the application.
+   * 
+   * @param  {Object} $httpProvider - Angular's $http provider
+   * @param  {Object} adalProvider  - ADAL JS' provider
+   */
+  function configAuth($httpProvider, adalProvider) {
+    adalProvider.init({
+      tenant: 'AAD_TENANT_ID',
+      clientId: 'AAD_APP_ID',
+      postLogoutRedirectUrl: 'http://localhost:3000',
+      endpoints: {
+        'https://SHAREPOINT_SITE_URL/_api': 'https://OFFICE365_TENANT_DOMAIN'
+      }
+    }, $httpProvider);
   }
 
 })();
