@@ -5,6 +5,7 @@
     .controller('ngSpRestApi.navbar', [
       '$route',
       '$location',
+      'adalAuthenticationService',
       navbarController
     ]);
     
@@ -13,9 +14,14 @@
    * @param  {Object} $route    - Angular's route service
    * @param  {Object} $location - Angular's location service
    */
-  function navbarController($route, $location) {
+  function navbarController($route, $location, adalJs) {
     var vm = this;
 
+    // current auth user details
+    vm.isLoggedIn = _isLoggedIn;
+    vm.authUser = adalJs.userInfo.userName;
+    vm.onLogin = _login;
+    vm.onLogout = _logout;
     // collection of routes to show in nav
     vm.routes = [];
     // utility to determine if route is current page
@@ -31,6 +37,18 @@
      */
     function _init() {
       vm.routes = _populateRoutes();
+    }
+    
+    function _isLoggedIn() {
+      return adalJs.userInfo.isAuthenticated;
+    }
+    
+    function _login() {
+      adalJs.login();
+    }
+    
+    function _logout() {
+      adalJs.logOut();
     }
 
     /**

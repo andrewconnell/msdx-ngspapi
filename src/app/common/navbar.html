@@ -17,6 +17,11 @@
           <a ng-href="#{{route.appUrl}}">{{route.title}}</a>
         </li>
       </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li ng-if="!vm.isLoggedIn()"><a ng-click="vm.onLogin()">Login</a></li>
+        <li ng-if="vm.isLoggedIn()"><a>Hello {{vm.authUser}}!</a></li>
+        <li ng-if="vm.isLoggedIn()"><a ng-click="vm.onLogout()">Logout</a></li>
+      </ul>
     </div>
     <!--/.nav-collapse -->
   </div>
